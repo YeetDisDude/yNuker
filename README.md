@@ -13,7 +13,7 @@ createRole - Creates roles. (roleName in config)
 
 createVc - Creates voice chats. (vcName in config)
 
-
+guildEdit- changes the server icon (customizable on line 81 in bot.py) and name (serverName in config)
 
 Other Commands
 
@@ -35,7 +35,8 @@ NOTE:
 
 
                                                 Releases
-(BETA) 1.0 - First release of yNuker. Please report any problems on the github. 11/7/21
+(BETA) 0.1 - First release of yNuker. Please report any problems on the github. 11/7/21
+(BETA) 0.2 - Improved delAll command and it now deletes channels at the speed of light. Added a guild edit (refer to line 16) 11/10/21
 
 
 

